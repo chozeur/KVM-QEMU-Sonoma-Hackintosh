@@ -28,9 +28,39 @@ I will not cover the setup of the UNRAID server here, but I'll guide you threw t
 
 	* Run `gibMacOS.command` and select the macOS version you want to download (Sonoma in this case).
 
+	* Run the downloaded `InstallAssistant.pkg` and follow the instructions.
+
 * ## Create the bootable `.img` file
 
+	* On a macOS machine, open Disk Utility
+	* Click `File` > `New Image` > `Blank Image`
+	* Set the following settings:
+		* **Save as**: macOS
+		* **Name**: macOS
+		* **Size**: 16384 Mo
+		* **Format**: Mac OS Extended (Journaled)
+	* Click `Save`
+	* In terminal, run `sudo /Applications/Install\ macOS\ Sonoma.app/Contents/Resources/createinstallmedia --volume /Volumes/macOS --nointeraction`
+	* Once the process is done, run: `hdutil detach --force /Volumes/Install\ macOS\ Sonoma`
+	* Convert the disk image to a `.cdr` file: `hdiutil convert /PATH/TO/macOS.dmg -format UDTO -o ~/Desktop/macOS.cdr` (replace `/PATH/TO/macOS.dmg` with the path to your `.dmg` file)
+	* Rename the `.cdr` file to `.img`: `mv ~/Desktop/macOS.cdr ~/Desktop/macOS.img`
 
+* ## Copy the `.img` file to UNRAID
+
+	There are many ways to do this, here is how to do it using a Python http server
+
+	* On your macOS machine, run `python3 -m http.server 8000` in the directory where the `.img` file is located
+	* Open an SSH session to your UNRAID server, or use the terminal in the web interface
+	* Run `curl -o /PATH/TO/YOUR/UNRAID/ISOS/DIRECTORY http://YOUR_MACOS_IP:8000/macOS.img` (replace `YOUR_MACOS_IP` with your macOS machine IP and `/PATH/TO/YOUR/UNRAID/ISOS/DIRECTORY` with the path to your UNRAID ISOs directory)
+
+# Get KVM-OpenCore image
+
+* ## Download the KVM-OpenCore image
+
+	* On [this](https://github.com/thenickdude/KVM-Opencore) repo, download the `KVM-OpenCore` [image](https://github.com/thenickdude/KVM-Opencore/releases/download/v20/OpenCore-v20.iso.gz)
+	* Extract the `.gz` file: `gzip -d OpenCore-v20.iso.gz`
+	* Change the name of the `.iso` file to `OpenCore.img`: `mv OpenCore-v20.iso OpenCore.img`
+	* Copy the `.img` file to your UNRAID ISOs directory (you can use the same method as for the macOS `.img` file)
 
 # macOS VM setup
 
@@ -44,3 +74,9 @@ I will not cover the setup of the UNRAID server here, but I'll guide you threw t
 		* **Privileged**: On
 		* **Operating System Version**: Monterey
 
+# Credits
+
+* [u/pirokiki](https://www.reddit.com/user/pirokiki/) for the undefeatable patience, the great help and the so useful [guide](https://www.reddit.com/r/unRAID/comments/17rmf1y/hi_i_managed_to_create_sonoma_vm_on_unraid_with/) on how to install macOS Sonoma on UNRAID
+* [Dortania](https://dortania.github.io) for the amazing guides on how to install macOS on non-Apple hardware
+* [Spaceinvader One](https://www.youtube.com/c/SpaceinvaderOne) for the amazing UNRAID tutorials
+* [i12bretro](https://i12bretro.github.io/tutorials/) for the great tutorials
