@@ -170,15 +170,23 @@ On the [repo](https://github.com/thenickdude/KVM-Opencore) we used [before](#get
 
 Then, in Opencore Configurator, go in `PlatformInfo` tab. On the second block, select a Mac model that is compatible with macOS Sonoma. I selected *iMac Retina 5K from 2020*. Then click `Check Coverage`. The serial number must <u>**NOT**</u> be valid. If it is, click `Generate` until it's not.
 
+
+---
+
+If you are using a NAVI AMD GPU, you'll need to add the following argument to the `NVRAM` > `Add` section in the 3rd block:
+
+```
+agdpmod=pikera
+```
+
+---
+
 At this point, I strongly recommend to shut the system down and make a backup of the VM's folder and its XML. Doing so, you'll be able to restore the VM to this state if anything goes wrong. The XML file can be found in `/etc/libvirt/qemu/` and the VM's folder in your VMs location on UNRAID.
 
 # Post-installation
 
 <!--
 
-Boot
-Add args to nvram boot-args
-set the SMBIOS
 dump the vBIOS
 make changes to xml (cpu, ram, gpu, usb, etc)
 		Do not forget to unbind the GPU from the host before passing it to the VM. You can do so by adding this line to the `/boot/syslinux/syslinux.cfg` under `label Unraid OS` file on your UNRAID server:
@@ -189,11 +197,15 @@ reset nvram at least twice
 
  -->
 
- From now on, you'll need to make some changes to the OpenCore settings and the VM's XML.
 
- We'll start by making the changes to the OpenCore settings. Act as follows:
- * Start the
 
+# Troubleshooting
+
+Since the process of installing macOS on non Apple hardware may vary a lot depending on your hardware, you may face some issues. Do not hesitate to ask for help on related forums, Discord servers, etc. The community is very helpful and you'll probably find someone who faced the same issue as you.
+
+I can be reached on Reddit and Discord as @chozeur
+
+Good luck!
 
 # Credits
 
