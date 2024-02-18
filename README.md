@@ -1,11 +1,16 @@
+# KVM-QEMU
 This repo aims to guide you threw the setup of a macOS (Sonoma 14.3) virtual machine. We'll deploy it using [KVM](https://www.redhat.com/en/topics/virtualization/what-is-KVM) and [QEMU](https://www.qemu.org) under an [UNRAID](https://unraid.net) server.
-
+--
 # Disclaimer
 
-This guide is rendered for educational purposes only. </br>
-I am not affiliated with Apple Inc. or any of its subsidiaries or affiliates in any way. </br>
-Apple, Mac, macOS, and other Apple-related terms are registered trademarks of Apple Inc. All other trademarks, service marks, product names, and company names or logos mentioned on this guide are the property of their respective owners. </br>
-The official Apple website can be found at https://www.apple.com </br>
+This guide is rendered for educational purposes only.
+
+I am not affiliated with Apple Inc. or any of its subsidiaries or affiliates in any way.
+
+Apple, Mac, macOS, and other Apple-related terms are registered trademarks of Apple Inc. All other trademarks, service marks, product names, and company names or logos mentioned on this guide are the property of their respective owners.
+
+The official Apple website can be found at https://www.apple.com
+
 It’s advisable to consult with legal counsel before proceeding further.
 
 # Prerequisites
@@ -149,7 +154,46 @@ You'll need to have the [User Scripts](https://forums.unraid.net/topic/48286-plu
 	* Select `Install macOS Sonoma`
 	* Click `Continue`
 
-From now on, the installation process should be pretty straightforward. The VM will reboot a few times. You need to select the `macOS Installer` every it reboots, as long as it appears. At some point, you'll see the disk you previously named `Sonoma`, and you'll so have to boot on it from then on.
+From now on, the installation process should be pretty straightforward. The VM will reboot a few times. You need to select the `macOS Installer` every time it reboots, as long as it appears. At some point, you'll see the disk you previously named `Sonoma`, and you'll so have to boot on it from then on.
+
+Once the installation process is done, follow the instructions to set up the system. <u>**DO NOT LOG IN WITH YOUR APPLE ID**</u>. We'll do it later.
+
+* # EFI setup
+
+Once you are on the desktop, open Safari and download the [OpenCore Configurator](https://mackie100projects.altervista.org/download-opencore-configurator/). Drag and drop it to the Applications folder. Since it's not signed, you'll need to open the app a first time, resulting in a warning message. Go to `System Preferences` > `Security & Privacy` and click `Open Anyway`.
+
+I strongly recommend to upgrade OpenCore at this point. I will not cover the process here, but you can find a guide on how to do it [here](https://dortania.github.io/OpenCore-Post-Install/universal/update.html).
+
+Once the app is open, click the `Tools` > `Mount EFI`. Select the disk where you installed macOS and click `Mount Partition`. Once the partition is mounted, click `Open Partition`. Keep the window open.
+
+On the [repo](https://github.com/thenickdude/KVM-Opencore) we used [before](#get-kvm-opencore-image) to download the `OpenCore.img` file, [download](https://github.com/thenickdude/KVM-Opencore/releases/download/v20/OpenCoreEFIFolder-v20.zip) the `OpenCoreEFIFolder.zip` file. Extract it and open the `EFI` folder. Drag and drop the `EFI` folder to the `EFI` partition you previously opened.
+
+Then, in Opencore Configurator, go in `PlatformInfo` tab. On the second block, select a Mac model that is compatible with macOS Sonoma. I selected *iMac Retina 5K from 2020*. Then click `Check Coverage`. The serial number must <u>**NOT**</u> be valid. If it is, click `Generate` until it's not.
+
+At this point, I strongly recommend to shut the system down and make a backup of the VM's folder and its XML. Doing so, you'll be able to restore the VM to this state if anything goes wrong. The XML file can be found in `/etc/libvirt/qemu/` and the VM's folder in your VMs location on UNRAID.
+
+# Post-installation
+
+<!--
+
+Boot
+Add args to nvram boot-args
+set the SMBIOS
+dump the vBIOS
+make changes to xml (cpu, ram, gpu, usb, etc)
+		Do not forget to unbind the GPU from the host before passing it to the VM. You can do so by adding this line to the `/boot/syslinux/syslinux.cfg` under `label Unraid OS` file on your UNRAID server:
+		```bash
+		append vfio-pci.ids=1002:73bf,1002:ab28 pcie_acs_override=multifunction video=efifb:off initrd=/bzroot
+		```
+reset nvram at least twice
+
+ -->
+
+ From now on, you'll need to make some changes to the OpenCore settings and the VM's XML.
+
+ We'll start by making the changes to the OpenCore settings. Act as follows:
+ * Start the
+
 
 # Credits
 
