@@ -160,7 +160,7 @@ From now on, the installation process should be pretty straightforward. The VM w
 
 Once the installation process is done, follow the instructions to set up the system. <u>**DO NOT LOG IN WITH YOUR APPLE ID**</u>. We'll do it later.
 
-* # EFI setup
+* ## EFI setup
 
 Once you are on the desktop, open Safari and download the [OpenCore Configurator](https://mackie100projects.altervista.org/download-opencore-configurator/). Drag and drop it to the Applications folder. Since it's not signed, you'll need to open the app a first time, resulting in a warning message. Go to `System Preferences` > `Security & Privacy` and click `Open Anyway`.
 
