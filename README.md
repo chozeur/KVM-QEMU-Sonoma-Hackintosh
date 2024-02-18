@@ -1,6 +1,8 @@
-# KVM-QEMU
+# macOS Sonoma 14.3 VM on UNRAID
 This repo aims to guide you threw the setup of a macOS (Sonoma 14.3) virtual machine. We'll deploy it using [KVM](https://www.redhat.com/en/topics/virtualization/what-is-KVM) and [QEMU](https://www.qemu.org) under an [UNRAID](https://unraid.net) server.
---
+
+---
+
 # Disclaimer
 
 This guide is rendered for educational purposes only.
@@ -197,7 +199,150 @@ reset nvram at least twice
 
  -->
 
+## Remove the installation disks
 
+Once you are done with the installation, you'll need to remove the installation disks from the VM's XML.
+
+* Replace the path of the firstly appearing disk (`OpenCore.img`) with the path of the VM's vdisk
+* Remove the secondly appearing disk
+* Remove the thirdly appearing disk
+
+## Devices passthrough
+
+We'll now be able to:
+* Add more CPU cores and RAM to the VM
+* Pass the GPU
+* Pass USB devices
+
+In the following sections, I will provide you XML lines that reffers to my hardware. You'll need to change the values to match your hardware. Here is the output of `lspci -nn` on my UNRAID server:
+
+![screnshot](https://i.imgur.com/jsZnqll.png)
+
+### <u>Add more CPU cores and RAM to the VM</u>
+
+To do so, we'll edit the VM's XML. Here is how mine looks like after passing 8 cores and 16 threads and 16GB of RAM:
+
+```xml
+<!--
+	...
+ -->
+  <memory unit='KiB'>16777216</memory>
+  <currentMemory unit='KiB'>16777216</currentMemory>
+<!--
+	...
+-->
+  <vcpu placement='static'>16</vcpu>
+  <cputune>
+    <vcpupin vcpu='0' cpuset='0'/>
+    <vcpupin vcpu='1' cpuset='8'/>
+    <vcpupin vcpu='2' cpuset='1'/>
+    <vcpupin vcpu='3' cpuset='9'/>
+    <vcpupin vcpu='4' cpuset='2'/>
+    <vcpupin vcpu='5' cpuset='10'/>
+    <vcpupin vcpu='6' cpuset='3'/>
+    <vcpupin vcpu='7' cpuset='11'/>
+    <vcpupin vcpu='8' cpuset='4'/>
+    <vcpupin vcpu='9' cpuset='12'/>
+    <vcpupin vcpu='10' cpuset='5'/>
+    <vcpupin vcpu='11' cpuset='13'/>
+    <vcpupin vcpu='12' cpuset='6'/>
+    <vcpupin vcpu='13' cpuset='14'/>
+    <vcpupin vcpu='14' cpuset='7'/>
+    <vcpupin vcpu='15' cpuset='15'/>
+  </cputune>
+<!--
+	...
+-->
+  <cpu mode='host-passthrough' check='none' migratable='on'>
+    <topology sockets='1' dies='1' cores='8' threads='2'/>
+  </cpu>
+<!--
+	...
+-->
+```
+
+### <u>Pass the GPU</u>
+
+Do not forget to unbind the GPU from the host before passing it to the VM. You can do so by adding this line to the `/boot/syslinux/syslinux.cfg` file under `label Unraid OS` on your UNRAID server:
+
+```bash
+append vfio-pci.ids=1002:73bf,1002:ab28 pcie_acs_override=multifunction video=efifb:off initrd=/bzroot
+```
+
+You'll need to replace `1002:73bf` and `1002:ab28` with the IDs of your GPU. You can find them by running `lspci -nn` in the terminal of your UNRAID server. The first ID is the GPU's ID and the second one is the audio device's ID.
+
+I strongly recommend to dump the vBIOS of your GPU. You can do so following [this](https://www.youtube.com/watch?v=FWn6OCWl63o&t=304s) guide.
+
+Once you have the vBIOS, you can pass the GPU to the VM. Here is how my XML looks like after passing my RX 6800:
+
+```xml
+<!--
+	...
+-->
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='0x0000' bus='0x03' slot='0x00' function='0x0'/>
+      </source>
+      <alias name='hostdev2'/>
+      <rom file='/mnt/user/isos/vbios/rx6800.rom'/>
+      <address type='pci' domain='0x0000' bus='0x04' slot='0x00' function='0x0' multifunction='on'/>
+    </hostdev>
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='0x0000' bus='0x03' slot='0x00' function='0x1'/>
+      </source>
+      <alias name='hostdev3'/>
+      <address type='pci' domain='0x0000' bus='0x04' slot='0x00' function='0x1'/>
+    </hostdev>
+<!--
+	...
+-->
+```
+
+Change the `rom file` path to the path where you stored the vBIOS, and the `address` fields to the IDs of your GPU (you can find them by running `lspci -nn` in the terminal of your UNRAID server).
+
+### <u>Pass USB devices</u>
+
+As I said in the prerequisites, I strongly recommend to use a dedicated PCIe USB controller to pass USB devices. Here is how my XML looks like after passing my USB controller:
+
+```xml
+<!--
+	...
+-->
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='0x0000' bus='0x05' slot='0x00' function='0x0'/>
+      </source>
+      <alias name='hostdev0'/>
+      <address type='pci' domain='0x0000' bus='0x05' slot='0x00' function='0x0'/>
+    </hostdev>
+<!--
+	...
+-->
+```
+
+Again, you'll need to change the `address` fields to the IDs of your USB controller.
+
+---
+
+You can follow this process to pass any other device to the VM. I added a PCIe soundcard the same way I added the USB controller. [This](https://amzn.to/49H47rR) model is working out of the box.
+
+---
+
+## Reset NVRAM
+
+At this point, you should have reached the end of the entire process of setting up the VM. You'll need to reset the NVRAM at least twice. You can do so by selecting `Reset NVRAM` in the boot menu when you start the VM.
+
+## Skip boot picker
+
+If everything is working as expected, you can skip the boot picker by doing so:
+
+* Open OpenCore Configurator
+* Go to `Misc` tab
+* In the `Boot` section, set `ShowPicker` to `False`
 
 # Troubleshooting
 
