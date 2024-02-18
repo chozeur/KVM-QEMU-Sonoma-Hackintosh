@@ -129,6 +129,28 @@ You'll need to have the [User Scripts](https://forums.unraid.net/topic/48286-plu
 		</qemu:commandline>
 		```
 
+	* Click `Update`
+
+* ## Install macOS
+
+	* Start the VM
+	* Open VNC remote viewer
+	* Select `UEFI Shell`
+	* Run `System\Library\CoreServices\boot.efi`
+	* You should be now in the Recovery mode
+	* Open Disk Utility
+	* Select the disk you want to install macOS on
+	* Click `Erase` and set the following settings:
+		* <u>**Name**</u> : Sonoma
+		* <u>**Format**</u> : APFS
+		* <u>**Scheme**</u> : GUID Partition Map
+	* Click `Erase`
+	* Close Disk Utility
+	* Select `Install macOS Sonoma`
+	* Click `Continue`
+
+From now on, the installation process should be pretty straightforward. The VM will reboot a few times. You need to select the `macOS Installer` every it reboots, as long as it appears. At some point, you'll see the disk you previously named `Sonoma`, and you'll so have to boot on it from then on.
+
 # Credits
 
 * [u/pirokiki](https://www.reddit.com/user/pirokiki/) for the undefeatable patience, the great help and the so useful [guide](https://www.reddit.com/r/unRAID/comments/17rmf1y/hi_i_managed_to_create_sonoma_vm_on_unraid_with/) on how to install macOS Sonoma on UNRAID
