@@ -30,6 +30,8 @@ First of all, you'll need to have an UNRAID server up and running. If you don't 
 
 I will not cover the setup of the UNRAID server here. For any UNRAID related questions, you can check the [official documentation](https://wiki.unraid.net/Main_Page). I also recommend to join the [UNRAID forums](https://forums.unraid.net) and the [UNRAID subreddit](https://www.reddit.com/r/unRAID/). Above all, here's probably the best YouTube channel to learn about UNRAID: [Spaceinvader One](https://www.youtube.com/c/SpaceinvaderOne).
 
+You'll need to have the [User Scripts](https://forums.unraid.net/topic/48286-plugin-ca-user-scripts/) and [vm_custom_icons](https://github.com/SpaceinvaderOne/unraid_vm_icons) plugins installed
+
 # Create macOS installation media
 
 * ## Download macOS installer
@@ -74,7 +76,7 @@ I will not cover the setup of the UNRAID server here. For any UNRAID related que
 
 * ## Create a macOS VM
 
-	* Go to UNRAID web interface, in Apps tab, and search for "macinabox".
+	* Go to UNRAID web interface, in `APPS` tab, and search for "macinabox".
 
 	* Set the following settings:
 		* <u>**Network Type**</u> : Bridge
@@ -90,6 +92,42 @@ I will not cover the setup of the UNRAID server here. For any UNRAID related que
 		* <u>**VM Images Location**</u> : *PATH TO YOUR VMs LOCATION ON UNRAID (if you left it as default, it should be in `/mnt/user/domains`)*
 		* <u>**Isos Share Location**</u> : *PATH TO YOUR ISOs LOCATION ON UNRAID (if you left it as default, it should be in `/mnt/user/isos`)*
 		* <u>**appdata**</u> : *`$(PATH TO YOUR APPDATA LOCATION ON UNRAID)/macinabox` (if you left it as default, it should be in `/mnt/user/appdata/macinabox`)*
+
+	* Click `Apply`
+
+	* On UNRAID web interface, go to `Settings` tab > `User Scripts` and run in background `1_macinabox_vmready_notify`
+
+	* Once the notification appears, run `1_macinabox_helper`
+
+	* Once the process is done, go to `VMS` tab. **DO NOT START THE VM YET**.
+
+* ## Edit the VM's XML
+
+	The `1_macinabox_helper` script created the VM. It also fixed its XML. From now on, we'll <u>NEVER USE IT AGAIN</u>, since it will overwrite the XML with the wrong settings. Also, we will <u>NEVER USE THE GUI TO EDIT THE VM's SETTINGS</u>, since it will also overwrite the XML with the wrong settings.
+
+	So, to edit the VM's settings, we'll need to edit the XML directly. In the `VMS` tab, click on the VM's icon, then click `Edit`. In top right corner, click `XML VIEW`.
+
+	For now, make the following changes <u>**ONLY**</u> :
+	* Change path to the Opencore image to where you stored the one you downloaded [earlier](#get-kvm-opencore-image)
+	* Change path to the macOS image to where you stored the one you downloaded [earlier](#copy-the-img-file-to-unraid)
+	* Depending on your CPU, add the [according]() qemu command line arguments. I am using an Intel® Core™ i7-10700K, so I added the following arguments *(add it at the end of the `<domain>` section)*:
+		```xml
+		<qemu:commandline>
+			<qemu:arg value='-usb'/>
+			<qemu:arg value='-device'/>
+			<qemu:arg value='usb-kbd,bus=usb-bus.0'/>
+			<qemu:arg value='-device'/>
+			<qemu:arg value='isa-applesmc,osk=ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc'/>
+			<qemu:arg value='-smbios'/>
+			<qemu:arg value='type=2'/>
+			<qemu:arg value='-global'/>
+			<qemu:arg value='nec-usb-xhci.msi=off'/>
+			<qemu:arg value='-global'/>
+			<qemu:arg value='ICH9-LPC.acpi-pci-hotplug-with-bridge-support=off'/>
+			<qemu:arg value='-cpu'/>
+			<qemu:arg value='host,kvm=on,vendor=GenuineIntel,vmware-cpuid-freq=on,+kvm_pv_unhalt,+kvm_pv_eoi,+hypervisor,+invtsc,+pcid,+ssse3,+sse4.2,+popcnt,+avx,+avx2,+aes,+fma,+bmi1,+bmi2,+xsave,+xsaveopt,+rdrand,check'/>
+		</qemu:commandline>
+		```
 
 # Credits
 
