@@ -1,16 +1,26 @@
 This repo aims to guide you threw the setup of a macOS (Sonoma 14.3) virtual machine. We'll deploy it using [KVM](https://www.redhat.com/en/topics/virtualization/what-is-KVM) and [QEMU](https://www.qemu.org) under an [UNRAID](https://unraid.net) server.
 
+# Disclaimer
+
+This guide is rendered for educational purposes only. </br>
+I am not affiliated with Apple Inc. or any of its subsidiaries or affiliates in any way. </br>
+Apple, Mac, macOS, and other Apple-related terms are registered trademarks of Apple Inc. All other trademarks, service marks, product names, and company names or logos mentioned on this guide are the property of their respective owners. </br>
+The official Apple website can be found at https://www.apple.com </br>
+It’s advisable to consult with legal counsel before proceeding further.
+
 # Prerequisites
 
 * A macOS machine to create the installation media
 
 * Check your components compatibility with macOS. You can use [this](https://dortania.github.io/OpenCore-Install-Guide/macos-limits.html) guide to check it.
 
+* I strongly recommend to use a dedicated PCIe USB controller to pass USB devices to the VM. I didn't manage to pass any of mine without it. [This](https://amzn.to/3wi4Stb) is the one I use. It worked out of the box.
+
 * Patience. This is not a simple process and it will take some time to get it working.
 
 # GPU compatibility
 
-Once your VM will be up and running, you'll need to pass a GPU to it. Since macOS stopped supporting NVIDIA GPUs, I strongly recommend to use an AMD one (some NVIDIA might do the job, like GT 710, but you'll probably face some extra settings that I will not cover here). You can use any AMD GPU, but I suggest using a Polaris or Navi one, since they are natively supported by macOS.
+Once your VM will be up and running, you'll need to pass a GPU to it. Since macOS stopped supporting NVIDIA GPUs, I strongly recommend to use an AMD one (some NVIDIA might do the job, like GT 710, but you'll probably face the need of some extra settings that I will not cover here). You can use any AMD GPU, but I suggest using a Polaris or Navi one, since they are natively supported by macOS.
 
 The list of supported GPUs can be found [here](https://dortania.github.io/GPU-Buyers-Guide/modern-gpus/amd-gpu.html).
 
@@ -18,7 +28,7 @@ The list of supported GPUs can be found [here](https://dortania.github.io/GPU-Bu
 
 First of all, you'll need to have an UNRAID server up and running. If you don't have one, you can follow [this](https://docs.unraid.net/unraid-os/getting-started/quick-install-guide/) guide to set it up.
 
-I will not cover the setup of the UNRAID server here, but I'll guide you threw the setup of the macOS VM. For any UNRAID related questions, you can check the [official documentation](https://wiki.unraid.net/Main_Page). I also recommend to join the [UNRAID forums](https://forums.unraid.net) and the [UNRAID subreddit](https://www.reddit.com/r/unRAID/). Overall, here's probably the best YouTube channel to learn about UNRAID: [Spaceinvader One](https://www.youtube.com/c/SpaceinvaderOne).
+I will not cover the setup of the UNRAID server here. For any UNRAID related questions, you can check the [official documentation](https://wiki.unraid.net/Main_Page). I also recommend to join the [UNRAID forums](https://forums.unraid.net) and the [UNRAID subreddit](https://www.reddit.com/r/unRAID/). Above all, here's probably the best YouTube channel to learn about UNRAID: [Spaceinvader One](https://www.youtube.com/c/SpaceinvaderOne).
 
 # Create macOS installation media
 
@@ -26,7 +36,7 @@ I will not cover the setup of the UNRAID server here, but I'll guide you threw t
 
 	* Get [gibMacOS](https://github.com/corpnewt/gibMacOS) : `git clone https://github.com/corpnewt/gibMacOS.git`
 
-	* Run `gibMacOS.command` and select the macOS version you want to download (Sonoma in this case).
+	* In the cloned repo, run `gibMacOS.command` and select the macOS version you want to download (Sonoma in this case).
 
 	* Run the downloaded `InstallAssistant.pkg` and follow the instructions.
 
@@ -55,24 +65,31 @@ I will not cover the setup of the UNRAID server here, but I'll guide you threw t
 
 # Get KVM-OpenCore image
 
-* ## Download the KVM-OpenCore image
-
-	* On [this](https://github.com/thenickdude/KVM-Opencore) repo, download the `KVM-OpenCore` [image](https://github.com/thenickdude/KVM-Opencore/releases/download/v20/OpenCore-v20.iso.gz)
-	* Extract the `.gz` file: `gzip -d OpenCore-v20.iso.gz`
-	* Change the name of the `.iso` file to `OpenCore.img`: `mv OpenCore-v20.iso OpenCore.img`
-	* Copy the `.img` file to your UNRAID ISOs directory (you can use the same method as for the macOS `.img` file)
+* On [this](https://github.com/thenickdude/KVM-Opencore) repo, [download](https://github.com/thenickdude/KVM-Opencore/releases/download/v20/OpenCore-v20.iso.gz) the `KVM-OpenCore` image
+* Extract the `.gz` file: `gzip -d OpenCore-v20.iso.gz`
+* Change the name of the `.iso` file to `OpenCore.img`: `mv OpenCore-v20.iso OpenCore.img`
+* Copy the `.img` file to your UNRAID ISOs directory (you can use the same method as for the macOS `.img` file)
 
 # macOS VM setup
 
-* ## Step 1: Create a macOS VM
+* ## Create a macOS VM
 
 	* Go to UNRAID web interface, in Apps tab, and search for "macinabox".
 
 	* Set the following settings:
-		* **Network Type**: Bridge
-		* **Console shell command**: Shell
-		* **Privileged**: On
-		* **Operating System Version**: Monterey
+		* <u>**Network Type**</u> : Bridge
+		* <u>**Console shell command**</u> : Shell
+		* <u>**Privileged**</u> : On
+		* <u>**Operating System Version**</u> : Monterey
+		* <u>**Install Type**</u> : Auto install
+		* <u>**Vdisk Size**</u> : 100G *(At least)*
+		* <u>**Vdisk Type**</u> : raw
+		* <u>**Opencore stock or custom**</u> : stock
+		* <u>**Delete and replace Opencore**</u> : no
+		* <u>**Override default NIC type**</u> : vmxnet3
+		* <u>**VM Images Location**</u> : *PATH TO YOUR VMs LOCATION ON UNRAID (if you left it as default, it should be in `/mnt/user/domains`)*
+		* <u>**Isos Share Location**</u> : *PATH TO YOUR ISOs LOCATION ON UNRAID (if you left it as default, it should be in `/mnt/user/isos`)*
+		* <u>**appdata**</u> : *`$(PATH TO YOUR APPDATA LOCATION ON UNRAID)/macinabox` (if you left it as default, it should be in `/mnt/user/appdata/macinabox`)*
 
 # Credits
 
