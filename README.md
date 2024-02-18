@@ -301,7 +301,7 @@ Once you have the vBIOS, you can pass the GPU to the VM. Here is how my XML look
 -->
 ```
 
-Change the `rom file` path to the path where you stored the vBIOS, and the `address` fields to the IDs of your GPU (you can find them by running `lspci -nn` in the terminal of your UNRAID server).
+Change the rom file's path to the path where you stored the vBIOS, and the `address` fields to the IDs of your GPU (you can find them by running `lspci -nn` in the terminal of your UNRAID server).
 
 ### <u>Pass USB devices</u>
 
